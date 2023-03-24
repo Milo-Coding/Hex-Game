@@ -1,3 +1,10 @@
+/**
+ * Project taken from http://nifty.stanford.edu/2023/godbout-islands-of-hex/
+ * Credit for all the code outside of this file goes to Andrew Godbout
+ * The following code is created or adapted by Milo Fritzen
+ * Start Date: 3/23/23
+ */
+
 package islands.backend;
 
 /**
