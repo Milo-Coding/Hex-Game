@@ -14,7 +14,7 @@
 @rem limitations under the License.
 @rem
 
-@if "%DEBUG%" == "" @echo off
+@if "%DEBUG%"=="" @echo off
 @rem ##########################################################################
 @rem
 @rem  IslandsOfHex startup script for Windows
@@ -25,7 +25,8 @@
 if "%OS%"=="Windows_NT" setlocal
 
 set DIRNAME=%~dp0
-if "%DIRNAME%" == "" set DIRNAME=.
+if "%DIRNAME%"=="" set DIRNAME=.
+@rem This is normally unused
 set APP_BASE_NAME=%~n0
 set APP_HOME=%DIRNAME%..
 
@@ -40,7 +41,7 @@ if defined JAVA_HOME goto findJavaFromJavaHome
 
 set JAVA_EXE=java.exe
 %JAVA_EXE% -version >NUL 2>&1
-if "%ERRORLEVEL%" == "0" goto execute
+if %ERRORLEVEL% equ 0 goto execute
 
 echo.
 echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
@@ -67,7 +68,7 @@ goto fail
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\IslandsOfHex-1.0-SNAPSHOT.jar;%APP_HOME%\lib\junit-jupiter-params-5.8.1.jar;%APP_HOME%\lib\junit-jupiter-engine-5.8.1.jar;%APP_HOME%\lib\junit-jupiter-api-5.8.1.jar;%APP_HOME%\lib\junit-platform-engine-1.8.1.jar;%APP_HOME%\lib\junit-platform-commons-1.8.1.jar;%APP_HOME%\lib\junit-jupiter-5.8.1.jar;%APP_HOME%\lib\opentest4j-1.2.0.jar
+set CLASSPATH=%APP_HOME%\lib\IslandsOfHex-1.0-SNAPSHOT.jar;%APP_HOME%\lib\junit-jupiter-params-5.8.1.jar;%APP_HOME%\lib\junit-jupiter-engine-5.8.1.jar;%APP_HOME%\lib\junit-jupiter-api-5.8.1.jar;%APP_HOME%\lib\junit-platform-engine-1.8.1.jar;%APP_HOME%\lib\junit-platform-commons-1.8.1.jar;%APP_HOME%\lib\junit-jupiter-5.8.1.jar;%APP_HOME%\lib\jgrapht-core-1.5.1.jar;%APP_HOME%\lib\jheaps-0.13.jar;%APP_HOME%\lib\opentest4j-1.2.0.jar
 
 
 @rem Execute IslandsOfHex
@@ -75,13 +76,15 @@ set CLASSPATH=%APP_HOME%\lib\IslandsOfHex-1.0-SNAPSHOT.jar;%APP_HOME%\lib\junit-
 
 :end
 @rem End local scope for the variables with windows NT shell
-if "%ERRORLEVEL%"=="0" goto mainEnd
+if %ERRORLEVEL% equ 0 goto mainEnd
 
 :fail
 rem Set variable ISLANDS_OF_HEX_EXIT_CONSOLE if you need the _script_ return code instead of
 rem the _cmd.exe /c_ return code!
-if  not "" == "%ISLANDS_OF_HEX_EXIT_CONSOLE%" exit 1
-exit /b 1
+set EXIT_CODE=%ERRORLEVEL%
+if %EXIT_CODE% equ 0 set EXIT_CODE=1
+if not ""=="%ISLANDS_OF_HEX_EXIT_CONSOLE%" exit %EXIT_CODE%
+exit /b %EXIT_CODE%
 
 :mainEnd
 if "%OS%"=="Windows_NT" endlocal
