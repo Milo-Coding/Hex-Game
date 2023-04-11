@@ -10,4 +10,10 @@ The code with commit messages other than "add files via upload" was created or a
 Start Date: 3/23/23
 
 # Setup instructions:
-Coming soon
+if (everything is working) {
+run the GameDrive file in eclipse.
+}
+
+else {
+wait until if figure out how to fix it or add real setup instructions
+}
