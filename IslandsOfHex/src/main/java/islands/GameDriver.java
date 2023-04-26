@@ -15,7 +15,7 @@ public class GameDriver {
 
         Game game = new Game();
         frame.add(game);
-        frame.setSize(new Dimension(game.BOARD_WIDTH,game.BOARD_HEIGHT));
+        frame.setSize(new Dimension(Game.BOARD_WIDTH,Game.BOARD_HEIGHT));
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }

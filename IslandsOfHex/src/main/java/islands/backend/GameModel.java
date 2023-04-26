@@ -13,6 +13,9 @@ import org.jgrapht.graph.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import java.util.ArrayList;
 
 /**
@@ -26,11 +29,16 @@ public class GameModel {
     public static final boolean BLACK = false;
     // tracks the length/width of the game board
     public int gameEdge;
+    public int move = 0;
     
     // create the graph that that game is played on
 	public Graph<String, DefaultEdge> gameBoard = new SimpleGraph<>(DefaultEdge.class);
 	// create a dictionary that stores the tiles on the board and the clr linked to them
 	public Map<String, Integer> hexDict = new HashMap<>();
+	
+	// create global lists for later
+	ArrayList<String> counted;
+	ArrayList<String> toCount;
 	
     /**
      * Construct a game with given sizexsize and an empty game board
@@ -81,6 +89,12 @@ public class GameModel {
         if (hexDict.get(checkHex) == 0) {
         	return true;
         }
+        
+        // throw error
+        if(row >= gameEdge || row < 0 || col >= gameEdge || col < 0) {
+        	throw new IllegalArgumentException();
+        }
+        
         // otherwise it is an invalid play
         return false;
     }
@@ -100,9 +114,68 @@ public class GameModel {
     	int newClr = 1;
     	if (clr == WHITE) {newClr = -1;}
         hexDict.put(setHex, newClr);
+        this.move += 1;
+        // throw error
+        if(row >= gameEdge || row < 0 || col >= gameEdge || col < 0) {
+        	throw new IllegalArgumentException();
+        }
         
+        
+        // check to see if every piece on the board is full
+        if (this.move == this.gameEdge * this.gameEdge) {
+        	return true;
+        }
         // TODO: check if a white island spans the entire height or a black island spans the width
-        return false;
+        return (whiteSpan() || blackSpan());
+    }
+    
+    /**
+     * helper method that checks if white has met the end game condition
+     */
+    public boolean whiteSpan() {
+    	/*
+    	for (int row = 0; row < gameEdge; row++) {
+    		ArrayList<String> spanned = new ArrayList<String>();
+    		ArrayList<String> toSpan = new ArrayList<String>();
+    		String currentHex = (row + ",0");
+    		boolean spans = checkSpanHeight(currentHex, spanned, toSpan);
+    		// if there is a complete span, return that
+    		if (spans) {
+    			return spans;
+    		}
+    	}
+    	*/
+    	return false;
+    }
+    
+    public boolean checkSpanHeight(String currentHex, ArrayList<String> spanned, ArrayList<String> toSpan) {
+    	for (DefaultEdge connectedHex : gameBoard.edgesOf(currentHex)) {
+    		// if one of the connected hexes has the same color we need to count it too with breadth first sort
+			if (hexDict.get(connectedHex.toString().substring(1, 4)) == -1 && connectedHex.toString().substring(1, 4).equals(currentHex) == false) {
+				if (spanned.contains(connectedHex.toString().substring(1, 4)) == false) {
+					toSpan.add(connectedHex.toString().substring(1, 4));
+				}
+			} else if (hexDict.get(connectedHex.toString().substring(7, 10)) == -1 && connectedHex.toString().substring(7, 10).equals(currentHex) == false) {
+				if (spanned.contains(connectedHex.toString().substring(7, 10)) == false) {
+					toSpan.add(connectedHex.toString().substring(7, 10));
+				}
+			}
+    	}
+    	// if we have reached the other side then we have a complete span
+    	for (int row = 0; row < gameEdge; row++) {
+    		 
+    	}
+    	// if there are more hexes to check
+    	if (toSpan.isEmpty() == false) {
+    		return checkSpanHeight(currentHex, spanned, toSpan);
+    	}
+    	return false;
+    }
+    /**
+     * helper method that checks if black has met the end game condition
+     */
+    public boolean blackSpan() {
+    	return false;
     }
 
     /**
@@ -110,46 +183,29 @@ public class GameModel {
      * @return white score
      */
     public int whiteScore() {
-    	// list of all checked white hexes
-    	ArrayList<String> scoreList = new ArrayList<String>();
+    	// list of all checked hexes
+    	counted = new ArrayList<String>();
+    	
+    	// list of hexes that still need to be checked
+    	toCount = new ArrayList<String>();
+    	
     	// track the score
     	int score = 0;
-    	// check if the current hex is part of a counted island
-    	boolean inIsland;
     	
     	// run for each hex
     	for (int row = 0; row < gameEdge; row++) {
     		for (int col = 0; col < gameEdge; col++) {
-    			inIsland = false;
-    			// only continue if the hex is white
-    			if (hexDict.get(row + "," + col) == -1) {
-    				// check all the connected hexes
-    				for (DefaultEdge otherHex : gameBoard.edgesOf(row + "," + col)) {
-    					// if one of the connected hexes has already been counted, this is part of the same island
-    					if (scoreList.contains(otherHex.toString().substring(1, 4)) || scoreList.contains(otherHex.toString().substring(7, 10))) {
-    						inIsland = true; // it is part of an island, don't count it
-    					}
-    					// check everything is running correctly
-    					//System.out.println(scoreList);
-    					//System.out.println(otherHex);
-    					//System.out.println(otherHex.toString().substring(1, 4));
-    					//System.out.println(otherHex.toString().substring(7, 10));
-    				}
-    				// if the hex isn't part of an existing island, count it
-    				if (inIsland == false) {
-    					score++;
-	    				// check everything is being counted correctly
-	    				//System.out.println(scoreList);
-	    				
-    				}
-    				// after the white hex has been check, add it to the list of counted hexes
-    				scoreList.add(row + "," + col);
-    				//System.out.println("White: " + scoreList); // checking
-    				
-    				// check the island didn't get counted twice
-    				score += checkDoubleCount(row, col, -1);
+    			// define our current hex
+    			String currentHex = row + "," + col;
+    			// if we haven't check this hex yet and it is the correct color
+    			if (counted.contains(currentHex) == false && hexDict.get(currentHex) == -1) {
+    				// we haven't checked this hex of the correct color yet so add score
+    				score++;
+    				// add this hex and any hexes of the same color it is touching to the counted list
+    				toCount.add(currentHex);
+    				helpCount(currentHex, -1);
     			}
-        	}
+    		}
     	}
         return score;
     }
@@ -159,76 +215,79 @@ public class GameModel {
      * @return black score
      */
     public int blackScore() {
-    	/*
-    	 * copy pasted the code from whiteScore and change all the white references to black
-    	 */
-    	// list of all checked black hexes
-    	ArrayList<String> scoreList = new ArrayList<String>();
+    	// same as whiteScore with -1 values replaced by 1
+    	// list of all checked hexes
+    	counted = new ArrayList<String>();
+    	
+    	// list of hexes that still need to be checked
+    	toCount = new ArrayList<String>();
+    	
     	// track the score
     	int score = 0;
-    	// check if the current hex is part of a counted island
-    	boolean inIsland;
     	
     	// run for each hex
     	for (int row = 0; row < gameEdge; row++) {
     		for (int col = 0; col < gameEdge; col++) {
-    			inIsland = false;
-    			// only continue if the hex is black
-    			if (hexDict.get(row + "," + col) == 1) {
-    				// check all the connected hexes
-    				for (DefaultEdge otherHex : gameBoard.edgesOf(row + "," + col)) {
-    					// if one of the connected hexes has already been counted, this is part of the same island
-    					if (scoreList.contains(otherHex.toString().substring(1, 4)) || scoreList.contains(otherHex.toString().substring(7, 10))) {
-    						inIsland = true; // it is part of an island, don't count it
-    					}
-    					// check everything is running correctly
-    					//System.out.println(scoreList);
-    					//System.out.println(otherHex);
-    					//System.out.println(otherHex.toString().substring(1, 4));
-    					//System.out.println(otherHex.toString().substring(7, 10));
-    				}
-    				// if the hex isn't part of an existing island, count it
-    				if (inIsland == false) {
-    					score++;
-	    				// check everything is being counted correctly
-	    				//System.out.println(scoreList);
-    				}
-    				// after the black hex has been check, add it to the list of counted hexes
-    				scoreList.add(row + "," + col);
-    				//System.out.println("Black: " + scoreList); // checking
-    				
-    				// check the island didn't get counted twice
-    				score += checkDoubleCount(row, col, 1);
+    			// define our current hex
+    			String currentHex = row + "," + col;
+    			// if we haven't check this hex yet and it is the correct color
+    			if (counted.contains(currentHex) == false && hexDict.get(currentHex) == 1) {
+    				// we haven't checked this hex of the correct color yet so add score
+    				score++;
+    				// add this hex and any hexes of the same color it is touching to the counted list
+    				toCount.add(currentHex);
+    				helpCount(currentHex, 1);
     			}
-        	}
+    		}
     	}
         return score;
     }
     
     /**
-	 * based on the way the score is counted there there is an arrangement
-	 * of three tiles that can result in an island being counted twice:
-	 * #1 anyHex					Hexes #1 and #3 are counted before
-	 * #2 upper right of Hex #1		the checker realizes they are connected
-	 * #3 Hex above Hex #2			by Hex #2
-	 * 
-	 * This function subtracts a point from the score (returns -1) if that
-	 * is the case
-	 */
-    public int checkDoubleCount(int row, int col, int clr) {
-    	if (row == 0 || col == 0) {
-    		return 0;
+     * helper function for the score that check if a hex is in an island
+     */
+    public void helpCount(String currentHex, int color) {
+		toCount.remove(0); // this is our new currentHex
+
+    	// check to make sure we didn't accidentally check a hex twice
+    	
+    	// we have counted the current hex
+    	counted.add(currentHex);
+    	
+    	// check the connected hexes
+    	for (DefaultEdge connectedHexes : gameBoard.edgesOf(currentHex)) {
+    		// if one of the connected hexes has the same color we need to count it too with breadth first sort
+    		// I need to define a pattern so the code can extract the position of the tiles in a given vertex
+    		
+    		// Define the pattern
+    		String pattern = "\\((\\d+,\\d+)\\s*:\\s*(\\d+,\\d+)\\)";
+
+    		// Create a Pattern object
+    		Pattern hexPattern = Pattern.compile(pattern);
+    		
+    		// Create a Matcher object
+    		Matcher m = hexPattern.matcher(connectedHexes.toString());
+    		
+    		// get the first and second hex in the edge
+    		m.find();
+    		String hexOne = m.group(1); // #,#
+    	    String hexTwo = m.group(2); // #,#
+    	    
+    	    // check if either one is part of the island
+    	    if (hexDict.get(hexOne) == color && hexOne.equals(currentHex) == false) {
+				if (counted.contains(hexOne) == false) {
+					toCount.add(hexOne);
+				}
+			} else if (hexDict.get(hexTwo) == color && hexTwo.equals(currentHex) == false) {
+				if (counted.contains(hexTwo) == false) {
+					toCount.add(hexTwo);
+				}
+			}
     	}
-    	/*
-    	 *  if the islands to the left and top of the hex are the same
-    	 *  color as this hex but the top-left is not, then we are in
-    	 *  the problem case
-    	 */
-    	if (hexDict.get((row - 1) + "," + col) == clr && hexDict.get(row + "," + (col - 1)) == clr &&  hexDict.get((row - 1) + "," + (col - 1)) != clr) {
-    		// return -1 so one point is taken away from the score
-    		System.out.println("subtracting " + clr + " at " + row + "," + col);
-    		return -1;
+    	// if there are more hexes in this island run the same code for the next hex
+    	if (toCount.isEmpty() == false) {
+    		helpCount(toCount.get(0), color);
     	}
-    	return 0;
+    	
     }
 }
