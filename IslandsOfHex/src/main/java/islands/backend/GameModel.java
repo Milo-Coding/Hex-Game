@@ -126,6 +126,7 @@ public class GameModel {
         	return true;
         }
         // TODO: check if a white island spans the entire height or a black island spans the width
+        // excluded from my project due to time constraints
         return (whiteSpan() || blackSpan());
     }
     
@@ -133,49 +134,14 @@ public class GameModel {
      * helper method that checks if white has met the end game condition
      */
     public boolean whiteSpan() {
-    	/*
-    	for (int row = 0; row < gameEdge; row++) {
-    		ArrayList<String> spanned = new ArrayList<String>();
-    		ArrayList<String> toSpan = new ArrayList<String>();
-    		String currentHex = (row + ",0");
-    		boolean spans = checkSpanHeight(currentHex, spanned, toSpan);
-    		// if there is a complete span, return that
-    		if (spans) {
-    			return spans;
-    		}
-    	}
-    	*/
-    	return false;
+        return false;
     }
     
-    public boolean checkSpanHeight(String currentHex, ArrayList<String> spanned, ArrayList<String> toSpan) {
-    	for (DefaultEdge connectedHex : gameBoard.edgesOf(currentHex)) {
-    		// if one of the connected hexes has the same color we need to count it too with breadth first sort
-			if (hexDict.get(connectedHex.toString().substring(1, 4)) == -1 && connectedHex.toString().substring(1, 4).equals(currentHex) == false) {
-				if (spanned.contains(connectedHex.toString().substring(1, 4)) == false) {
-					toSpan.add(connectedHex.toString().substring(1, 4));
-				}
-			} else if (hexDict.get(connectedHex.toString().substring(7, 10)) == -1 && connectedHex.toString().substring(7, 10).equals(currentHex) == false) {
-				if (spanned.contains(connectedHex.toString().substring(7, 10)) == false) {
-					toSpan.add(connectedHex.toString().substring(7, 10));
-				}
-			}
-    	}
-    	// if we have reached the other side then we have a complete span
-    	for (int row = 0; row < gameEdge; row++) {
-    		 
-    	}
-    	// if there are more hexes to check
-    	if (toSpan.isEmpty() == false) {
-    		return checkSpanHeight(currentHex, spanned, toSpan);
-    	}
-    	return false;
-    }
     /**
      * helper method that checks if black has met the end game condition
      */
     public boolean blackSpan() {
-    	return false;
+        return false;
     }
 
     /**
@@ -257,8 +223,8 @@ public class GameModel {
     	// check the connected hexes
     	for (DefaultEdge connectedHexes : gameBoard.edgesOf(currentHex)) {
     		// if one of the connected hexes has the same color we need to count it too with breadth first sort
-    		// I need to define a pattern so the code can extract the position of the tiles in a given vertex
     		
+    		// I need to define a pattern so the code can extract the position of the tiles in a given vertex
     		// Define the pattern
     		String pattern = "\\((\\d+,\\d+)\\s*:\\s*(\\d+,\\d+)\\)";
 
